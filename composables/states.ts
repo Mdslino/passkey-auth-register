@@ -1,6 +1,9 @@
-import type { RegistrationJSON, AuthenticationJSON } from '@passwordless-id/webauthn/dist/esm/types';
+import type {
+    AuthenticationResponseJSON,
+    RegistrationResponseJSON,
+  } from '@simplewebauthn/types';
 
-const useFidoSign = () => useState<RegistrationJSON>();
-const useFidoAuth = () => useState<AuthenticationJSON>();
+const useFidoSign = () => useState<RegistrationResponseJSON>();
+const useFidoAuth = () => useState<AuthenticationResponseJSON>();
 
 export { useFidoSign, useFidoAuth };

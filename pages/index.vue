@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { z } from "zod";
 import { client } from "@passwordless-id/webauthn";
+import {startRegistration, startAuthentication} from "@simplewebauthn/browser"
 useHead({
   title: "Passkey Auth",
 });
@@ -9,6 +10,7 @@ const fidoSign = useFidoSign();
 const fidoAuth = useFidoAuth();
 
 const schema = z.object({
+  rp: z.string(),
   email: z.string().email("Invalid email"),
   challenge: z.string(),
 });
@@ -16,18 +18,30 @@ const schema = z.object({
 type Schema = z.output<typeof schema>;
 
 const state = reactive({
+  rp: "localhost",
   email: undefined,
   challenge: undefined,
 });
 
 async function register(state: Schema) {
-  const response = await client.register({
-    user: {
+  const response = await startRegistration({
+    optionsJSON: {
+      rp: {
+        name: state.rp,
+      },
+      user: {
         id: state.email,
         name: state.email,
         displayName: state.email,
-    },
-    challenge: state.challenge,
+      },
+      challenge: state.challenge,
+      pubKeyCredParams: [
+        {
+          type: "public-key",
+          alg: -257,
+        },
+      ],
+    }
   })
   console.log(state);
   fidoSign.value = response;
@@ -35,8 +49,11 @@ async function register(state: Schema) {
 }
 
 async function auth(state: Schema) {
-    const response = await client.authenticate({
-        challenge: state.challenge,
+    const response = await startAuthentication({
+        optionsJSON: {
+            challenge: state.challenge,
+            rpId: state.rp,
+        },
     })
     console.log(state);
     fidoAuth.value = response;
@@ -46,6 +63,10 @@ async function auth(state: Schema) {
 <template>
   <div class="flex justify-center items-center min-h-screen">
     <UForm :schema="schema" :state="state" class="space-y-4">
+      <UFormGroup label="RP" name="rp">
+        <UInput v-model="state.rp" />
+      </UFormGroup>
+
       <UFormGroup label="Email" name="email">
         <UInput v-model="state.email" />
       </UFormGroup>
