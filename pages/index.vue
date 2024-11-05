@@ -11,7 +11,6 @@ const fidoAuth = useFidoAuth();
 const schema = z.object({
   email: z.string().email("Invalid email"),
   challenge: z.string(),
-  domain: z.string().optional(),
 });
 
 type Schema = z.output<typeof schema>;
@@ -19,7 +18,6 @@ type Schema = z.output<typeof schema>;
 const state = reactive({
   email: undefined,
   challenge: undefined,
-  domain: undefined,
 });
 
 async function register(state: Schema) {
@@ -30,7 +28,6 @@ async function register(state: Schema) {
         displayName: state.email,
     },
     challenge: state.challenge,
-    domain: state.domain || '',
   })
   console.log(state);
   fidoSign.value = response;
@@ -40,7 +37,6 @@ async function register(state: Schema) {
 async function auth(state: Schema) {
     const response = await client.authenticate({
         challenge: state.challenge,
-        domain: state.domain || '',
     })
     console.log(state);
     fidoAuth.value = response;
@@ -58,9 +54,6 @@ async function auth(state: Schema) {
         <UInput v-model="state.challenge" />
       </UFormGroup>
 
-      <UFormGroup label="Domain" name="domain">
-        <UInput v-model="state.domain" />
-      </UFormGroup>
       <div class="space-x-4">
         <UButton color="blue" @click="() => register(state)">Registrar</UButton>
         <UButton color="green" @click="() => auth(state)">Autenticar</UButton>
