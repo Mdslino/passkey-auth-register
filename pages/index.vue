@@ -42,15 +42,15 @@ async function register(state: Schema) {
     },
     challenge: state.challenge,
     pubKeyCredParams: [
-            {
-                alg: -257,
-                type: "public-key"
-            }
-        ],
+      {
+        alg: -257,
+        type: "public-key" as const
+      }
+    ],
     extensions: {
             appid: "true"
         }
-  } as PublicKeyCredentialCreationOptionsJSON
+  }
   const response = await startRegistration({optionsJSON: options});
   console.log(response);
   fidoSign.value = response!;
