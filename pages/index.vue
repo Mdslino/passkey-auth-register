@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { z } from "zod";
-import {
-  startAuthentication,
-  startRegistration,
-} from "@simplewebauthn/browser";
+import { startAuthentication } from "@simplewebauthn/browser";
 useHead({
   title: "Passkey Auth",
 });
@@ -31,24 +28,35 @@ const state = reactive({
 });
 
 async function register(state: Schema) {
-  const response = await startRegistration({
-    optionsJSON: {
+  const response = await navigator.credentials.create({
+    publicKey: {
       rp: {
         id: state.rp,
         name: state.name,
       },
+
       user: {
-        id: state.id,
+        id: Uint8Array.from(state.id, (c) => c.charCodeAt(0)),
         name: state.displayName,
         displayName: state.displayName,
       },
-      challenge: state.challenge,
+
+      challenge: Uint8Array.from(state.challenge, (c) => c.charCodeAt(0)),
+
       pubKeyCredParams: [
         {
           type: "public-key",
           alg: -257,
         },
-      ]
+      ],
+      authenticatorSelection: {
+        residentKey: "required",
+        userVerification: "preferred",
+      },
+      extensions: {
+        // returns back details about the passkey
+        credProps: true,
+      },
     },
   });
   console.log(state);
@@ -57,14 +65,19 @@ async function register(state: Schema) {
 }
 
 async function auth(state: Schema) {
-  const response = await startAuthentication({
-    optionsJSON: {
-      challenge: state.challenge,
-      rpId: state.rp
+  const response = await navigator.credentials.get({
+    publicKey: {
+      rpId: state.rp,
+      challenge: Uint8Array.from(state.challenge, (c) => c.charCodeAt(0)),
+      allowCredentials: [
+        {
+          type: "public-key",
+          id: Uint8Array.from(state.id, (c) => c.charCodeAt(0)),
+        },
+      ],
+      userVerification: "preferred",
     },
   });
-  console.log(state);
-  fidoAuth.value = response!;
 }
 </script>
 
