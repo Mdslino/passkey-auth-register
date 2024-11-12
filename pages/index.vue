@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {z} from "zod";
 import {startAuthentication, startRegistration} from '@simplewebauthn/browser';
-import {PublicKeyCredentialCreationOptionsJSON} from "@simplewebauthn/types";
 
+const url = useRequestURL();
 useHead({
   title: "Passkey Auth",
 });
@@ -21,7 +21,7 @@ const schema = z.object({
 type Schema = z.output<typeof schema>;
 
 const state = reactive({
-  rp: "localhost",
+  rp: url.hostname,
   id: undefined,
   name: undefined,
   displayName: undefined,
