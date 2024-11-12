@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import {z} from "zod";
-import {startAuthentication, startRegistration} from "@simplewebauthn/browser"
-import { client } from '@passwordless-id/webauthn'
 
 useHead({
   title: "Passkey Auth",
