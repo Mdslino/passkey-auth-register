@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { z } from "zod";
-import { Crypto } from "node:crypto"
-import {startRegistration, startAuthentication} from "@simplewebauthn/browser"
+import {z} from "zod";
+import {startAuthentication, startRegistration} from "@simplewebauthn/browser"
+import { client } from '@passwordless-id/webauthn'
+
 useHead({
   title: "Passkey Auth",
 });
@@ -29,39 +30,46 @@ const state = reactive({
 });
 
 async function register(state: Schema) {
-  const response = await startRegistration({
-    optionsJSON: {
+  const response = await navigator.credentials.create({
+    publicKey: {
       rp: {
         name: state.rp,
       },
       user: {
-        id: state.id,
+        id: new TextEncoder().encode(state.id),
         name: state.name,
         displayName: state.displayName,
       },
-      challenge: state.challenge,
+      challenge: new TextEncoder().encode(state.challenge),
       pubKeyCredParams: [
         {
           type: "public-key",
           alg: -257,
         },
       ],
-    }
+    },
   })
   console.log(state);
-  fidoSign.value = response;
+  fidoSign.value = response!;
   navigateTo('/code')
 }
 
 async function auth(state: Schema) {
-    const response = await startAuthentication({
-        optionsJSON: {
-            challenge: state.challenge,
+    const response = await navigator.credentials.get({
+        publicKey: {
+            challenge: new TextEncoder().encode(state.challenge),
             rpId: state.rp,
+            allowCredentials: [
+                {
+                    type: "public-key",
+                    id: new TextEncoder().encode(state.id),
+                },
+            ],
+            userVerification: "required",
         },
-    })
+    });
     console.log(state);
-    fidoAuth.value = response;
+    fidoAuth.value = response!;
 }
 </script>
 
