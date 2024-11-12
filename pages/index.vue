@@ -48,10 +48,7 @@ async function register(state: Schema) {
           type: "public-key",
           alg: -257,
         },
-      ],
-      extensions: {
-        appid: "true",
-      },
+      ]
     },
   });
   console.log(state);
@@ -63,10 +60,7 @@ async function auth(state: Schema) {
   const response = await startAuthentication({
     optionsJSON: {
       challenge: state.challenge,
-      rpId: state.rp,
-      extensions: {
-        appid: "true",
-      },
+      rpId: state.rp
     },
   });
   console.log(state);
