@@ -11,13 +11,12 @@
   },
   "dependencies": {
     "@nuxt/ui": "^2.18.7",
+    "@simplewebauthn/browser": "^11.0.0",
     "i18next": "^23.16.4",
     "nuxt": "^3.13.2",
     "vue": "latest",
     "vue-router": "latest",
     "zod": "^3.23.8",
     "zod-i18n-map": "^2.27.0"
-  },
-  "devDependencies": {
   }
 }

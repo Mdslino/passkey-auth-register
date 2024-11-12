@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { z } from "zod";
-import { startAuthentication } from "@simplewebauthn/browser";
+import {z} from "zod";
+import {startAuthentication, startRegistration} from '@simplewebauthn/browser';
+import {PublicKeyCredentialCreationOptionsJSON} from "@simplewebauthn/types";
+
 useHead({
   title: "Passkey Auth",
 });
@@ -28,56 +30,44 @@ const state = reactive({
 });
 
 async function register(state: Schema) {
-  const response = await navigator.credentials.create({
-    publicKey: {
-      rp: {
-        id: state.rp,
-        name: state.name,
-      },
-
-      user: {
-        id: Uint8Array.from(state.id, (c) => c.charCodeAt(0)),
-        name: state.displayName,
-        displayName: state.displayName,
-      },
-
-      challenge: Uint8Array.from(state.challenge, (c) => c.charCodeAt(0)),
-
-      pubKeyCredParams: [
-        {
-          type: "public-key",
-          alg: -257,
-        },
-      ],
-      authenticatorSelection: {
-        residentKey: "required",
-        userVerification: "preferred",
-      },
-      extensions: {
-        // returns back details about the passkey
-        credProps: true,
-      },
+  const options = {
+    rp: {
+      id: state.rp,
+      name: state.rp,
     },
-  });
-  console.log(state);
+    user: {
+      id: state.id,
+      name: state.name,
+      displayName: state.displayName,
+    },
+    challenge: state.challenge,
+    pubKeyCredParams: [
+            {
+                alg: -257,
+                type: "public-key"
+            }
+        ],
+    extensions: {
+            appid: "true"
+        }
+  } as PublicKeyCredentialCreationOptionsJSON
+  const response = await startRegistration({optionsJSON: options});
+  console.log(response);
   fidoSign.value = response!;
   navigateTo("/code");
 }
 
 async function auth(state: Schema) {
-  const response = await navigator.credentials.get({
-    publicKey: {
-      rpId: state.rp,
-      challenge: Uint8Array.from(state.challenge, (c) => c.charCodeAt(0)),
-      allowCredentials: [
-        {
-          type: "public-key",
-          id: Uint8Array.from(state.id, (c) => c.charCodeAt(0)),
-        },
-      ],
-      userVerification: "preferred",
-    },
-  });
+  const options = {
+    challenge: state.challenge,
+    rpId: state.rp,
+    extensions: {
+            appid: "true"
+    }
+  }
+  const response = await startAuthentication({optionsJSON: options});
+  console.log(response);
+  fidoAuth.value = response!;
 }
 </script>
 
