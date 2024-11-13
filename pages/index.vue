@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import {z} from "zod";
-import {startAuthentication, startRegistration} from '@simplewebauthn/browser';
-import { client } from '@passwordless-id/webauthn';
+import { z } from "zod";
+import {
+  startAuthentication,
+  startRegistration,
+} from "@simplewebauthn/browser";
+import { client } from "@passwordless-id/webauthn";
 const url = useRequestURL();
 useHead({
   title: "Passkey Auth",
@@ -22,32 +25,33 @@ type Schema = z.output<typeof schema>;
 
 const state = reactive({
   rp: url.hostname,
-  id: process.env.NUXT_PUBLIC_ID || undefined,
-  name: process.env.NUXT_PUBLIC_NAME || undefined,
-  displayName: process.env.NUXT_PUBLIC_DISPLAY_NAME || undefined,
+  id: undefined,
+  name: undefined,
+  displayName: undefined,
   challenge: undefined,
 });
 
 async function register(state: Schema) {
-  const options = {
-    rp: {
-      id: state.rp,
-      name: state.rp,
-    },
-    user: {
-      id: state.id,
-      name: state.name,
-      displayName: state.displayName,
-    },
-    challenge: state.challenge,
-    pubKeyCredParams: [
-      { alg: -257, type: 'public-key' },
-    ] as PublicKeyCredentialParameters[],
-    timeout: 60000,
-    excludeCredentials: [],
-  }
   try {
-    const response = await startRegistration({optionsJSON: options});
+    const response = await startRegistration({
+      optionsJSON: {
+        rp: {
+          id: state.rp,
+          name: state.rp,
+        },
+        user: {
+          id: state.id,
+          name: state.name,
+          displayName: state.displayName,
+        },
+        challenge: state.challenge,
+        pubKeyCredParams: [
+          { alg: -257, type: "public-key" },
+        ] as PublicKeyCredentialParameters[],
+        timeout: 60000,
+        excludeCredentials: [],
+      },
+    });
     console.log(response);
     fidoSign.value = response!;
     navigateTo("/code");
@@ -61,9 +65,8 @@ async function auth(state: Schema) {
     const options = {
       challenge: state.challenge,
       rpId: state.rp,
-      userVerification: 'required',
-    }
-    const response = await startAuthentication({optionsJSON: options});
+    };
+    const response = await startAuthentication({ optionsJSON: options });
     console.log(response);
     fidoAuth.value = response!;
     navigateTo("/code");

@@ -3,18 +3,16 @@ const fidoSign = useFidoSign();
 const fidoAuth = useFidoAuth();
 
 function getCode() {
-    if (fidoSign.value) {
-        return JSON.stringify(fidoSign.value, null, 2);
-    } else if (fidoAuth.value) {
-        return JSON.stringify(fidoAuth.value, null, 2);
-    } else {
-        return "";
-    }
+  if (fidoSign.value) {
+    return JSON.stringify(fidoSign.value, null, 2);
+  } else if (fidoAuth.value) {
+    return JSON.stringify(fidoAuth.value, null, 2);
+  } else {
+    return "";
+  }
 }
-
 </script>
 
 <template>
-  <CodeBlock :code="getCode()" />
-
+  <Shiki lang="json" :code="getCode()" />
 </template>
