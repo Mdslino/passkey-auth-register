@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {z} from "zod";
 import {startAuthentication, startRegistration} from '@simplewebauthn/browser';
-
+import { client } from '@passwordless-id/webauthn';
 const url = useRequestURL();
 useHead({
   title: "Passkey Auth",
@@ -22,10 +22,9 @@ type Schema = z.output<typeof schema>;
 
 const state = reactive({
   rp: url.hostname,
-  id: undefined,
-  name: undefined,
-  displayName: undefined,
-  email: undefined,
+  id: process.env.NUXT_PUBLIC_ID || undefined,
+  name: process.env.NUXT_PUBLIC_NAME || undefined,
+  displayName: process.env.NUXT_PUBLIC_DISPLAY_NAME || undefined,
   challenge: undefined,
 });
 
@@ -42,32 +41,35 @@ async function register(state: Schema) {
     },
     challenge: state.challenge,
     pubKeyCredParams: [
-      {
-        alg: -257,
-        type: "public-key" as const
-      }
-    ],
-    extensions: {
-            appid: "true"
-        }
+      { alg: -257, type: 'public-key' },
+    ] as PublicKeyCredentialParameters[],
+    timeout: 60000,
+    excludeCredentials: [],
   }
-  const response = await startRegistration({optionsJSON: options});
-  console.log(response);
-  fidoSign.value = response!;
-  navigateTo("/code");
+  try {
+    const response = await startRegistration({optionsJSON: options});
+    console.log(response);
+    fidoSign.value = response!;
+    navigateTo("/code");
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function auth(state: Schema) {
-  const options = {
-    challenge: state.challenge,
-    rpId: state.rp,
-    extensions: {
-            appid: "true"
+  try {
+    const options = {
+      challenge: state.challenge,
+      rpId: state.rp,
+      userVerification: 'required',
     }
+    const response = await startAuthentication({optionsJSON: options});
+    console.log(response);
+    fidoAuth.value = response!;
+    navigateTo("/code");
+  } catch (error) {
+    console.error(error);
   }
-  const response = await startAuthentication({optionsJSON: options});
-  console.log(response);
-  fidoAuth.value = response!;
 }
 </script>
 
